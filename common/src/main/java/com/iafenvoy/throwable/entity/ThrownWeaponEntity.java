@@ -1,10 +1,12 @@
-package com.iafenvoy.throwable.object;
+package com.iafenvoy.throwable.entity;
 
-import com.iafenvoy.throwable.registry.ThrowableEntities;
+import com.google.common.base.Suppliers;
+import com.iafenvoy.throwable.data.ThrowableItemExtension;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -12,26 +14,33 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SwordItem;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import java.util.function.Supplier;
+
 public class ThrownWeaponEntity extends PersistentProjectileEntity {
+    public static final String ID = "thrown_weapon";
+    public static Supplier<EntityType<ThrownWeaponEntity>> TYPE = Suppliers.memoize(() -> EntityType.Builder.<ThrownWeaponEntity>create(ThrownWeaponEntity::new, SpawnGroup.MISC).maxTrackingRange(64).trackingTickInterval(1).setDimensions(0.5F, 0.5F).build(ID));
+
     private static final TrackedData<ItemStack> STACK = DataTracker.registerData(ThrownWeaponEntity.class, TrackedDataHandlerRegistry.ITEM_STACK);
     private static final TrackedData<Float> SCALE = DataTracker.registerData(ThrownWeaponEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private boolean hitEntity;
 
     public ThrownWeaponEntity(World world, LivingEntity owner, ItemStack stack) {
-        super(ThrowableEntities.THROWN_WEAPON.get(), owner, world);
+        super(TYPE.get(), owner, world);
         this.pickupType = PickupPermission.DISALLOWED;
         this.setStack(stack);
     }
@@ -64,7 +73,7 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
-        if (player.getStackInHand(hand).isEmpty()) {
+        if (this.pickupType == PickupPermission.DISALLOWED && player.getStackInHand(hand).isEmpty()) {
             player.setStackInHand(hand, this.asItemStack());
             this.discard();
             return ActionResult.SUCCESS;
@@ -137,6 +146,13 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
     }
 
     @Override
+    protected void onBlockHit(BlockHitResult blockHitResult) {
+        SoundEvent soundEvent = this.getSound();
+        super.onBlockHit(blockHitResult);
+        this.setSound(soundEvent);
+    }
+
+    @Override
     protected Text getDefaultName() {
         return this.asItemStack().getName();
     }
@@ -147,14 +163,20 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
     }
 
     @Override
+    public void setDamage(double scale) {
+        double damage = 1;
+        if (this.asItemStack().getItem() instanceof SwordItem sword) damage = sword.getAttackDamage();
+        if (this.asItemStack().getItem() instanceof MiningToolItem tool) damage = tool.getAttackDamage();
+        super.setDamage(damage * scale);
+    }
+
+    @Override
     public ItemStack asItemStack() {
         return this.dataTracker.get(STACK).copy();
     }
 
     public void setStack(ItemStack stack) {
         this.dataTracker.set(STACK, stack);
-        if (stack.getItem() instanceof SwordItem sword)
-            this.setDamage(sword.getAttackDamage() / 2);
     }
 
     public float getScale() {

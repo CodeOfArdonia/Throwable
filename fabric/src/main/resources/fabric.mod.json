@@ -19,7 +19,7 @@
       "com.iafenvoy.throwable.fabric.ThrowableFabric"
     ],
     "client": [
-      "com.iafenvoy.throwable.fabric.client.ThrowableFabricClient"
+      "com.iafenvoy.throwable.fabric.ThrowableFabricClient"
     ]
   },
   "mixins": [

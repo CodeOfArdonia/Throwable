@@ -1,6 +1,6 @@
 package com.iafenvoy.throwable.mixin;
 
-import com.iafenvoy.throwable.object.ThrowableWeaponItem;
+import com.iafenvoy.throwable.data.ThrowableItemExtension;
 import com.iafenvoy.throwable.render.ThrownWeaponEntityRenderer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -22,7 +22,7 @@ public class HeldItemRendererMixin {
     private void startRenderItem(LivingEntity entity, ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         matrices.push();
         boolean thirdPerson = renderMode == ModelTransformationMode.THIRD_PERSON_LEFT_HAND || renderMode == ModelTransformationMode.THIRD_PERSON_RIGHT_HAND;
-        if (thirdPerson && entity.isUsingItem() && stack.getItem() instanceof ThrowableWeaponItem)
+        if (thirdPerson && entity.isUsingItem() && ((ThrowableItemExtension) stack.getItem()).throwable$canThrow())
             ThrownWeaponEntityRenderer.applyThrowTransform(matrices);
     }
 
