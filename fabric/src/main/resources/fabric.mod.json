@@ -3,16 +3,15 @@
   "id": "throwable",
   "version": "${version}",
   "name": "Throwable",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Throw everything!",
   "authors": [
-    "Me!"
+    "IAFEnvoy"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "sources": "https://github.com/CodeOfArdonia/Throwable"
   },
-  "license": "CC0-1.0",
-  "icon": "assets/throwable/icon.png",
+  "license": "All Right Reserved",
+  "icon": "logo.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -26,12 +25,7 @@
     "throwable.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.14",
-    "minecraft": "~1.20.1",
-    "java": ">=17",
-    "fabric-api": "*"
-  },
-  "suggests": {
-    "another-mod": "*"
+    "fabricloader": "*",
+    "minecraft": "~1.20.1"
   }
 }
