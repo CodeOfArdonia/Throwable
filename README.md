@@ -8,6 +8,17 @@ By default, all swords can be thrown. Once you have thrown, you need to click it
 
 ## Configuration
 
+### Global
+
+Create file `.minecraft/config/throwable.json` (may exist).
+
+```json5
+{
+  //Whether only owner can pick up the throwable thing.
+  "ownerPickUpOnly": false
+}
+```
+
 ### Item Specific
 
 Create file `data/<item namespace>/throwable/throwable/<item id>.json`, then write following contents:

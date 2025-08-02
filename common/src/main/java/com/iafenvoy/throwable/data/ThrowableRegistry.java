@@ -8,10 +8,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 public final class ThrowableRegistry {

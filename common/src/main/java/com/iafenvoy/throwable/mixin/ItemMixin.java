@@ -52,17 +52,20 @@ public abstract class ItemMixin implements ThrowableItemExtension {
 
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void handleStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        if (this.throwable$canThrow() && user instanceof PlayerEntity playerEntity) {
+        if (this.throwable$canThrow() && user instanceof PlayerEntity player) {
             ThrowableData data = this.throwable$getData(world.getRegistryManager());
             int i = data.maxUseTime() - remainingUseTicks;
             if (i >= 10) {
                 if (!world.isClient) {
-                    stack.damage(1, playerEntity, (p) -> p.sendToolBreakStatus(user.getActiveHand()));
-                    ThrownWeaponEntity weapon = new ThrownWeaponEntity(world, playerEntity, stack);
-                    weapon.setVelocity(playerEntity, playerEntity.getPitch(), playerEntity.getYaw(), 0, 2.5F, 1);
-                    if (playerEntity.getAbilities().creativeMode)
+                    stack.damage(1, player, (p) -> p.sendToolBreakStatus(user.getActiveHand()));
+                    ThrownWeaponEntity weapon = new ThrownWeaponEntity(world, player, stack);
+                    weapon.setVelocity(player, player.getPitch(), player.getYaw(), 0, 2.5F, 1);
+                    if (player.getAbilities().creativeMode)
                         weapon.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
-                    else playerEntity.getInventory().removeOne(stack);
+                    else {
+                        weapon.pickupType = PersistentProjectileEntity.PickupPermission.DISALLOWED;
+                        player.getInventory().removeOne(stack);
+                    }
                     if (remainingUseTicks <= 0) weapon.setCritical(true);
                     weapon.setSound(data.hitGroundSound());
                     weapon.setDamage(data.damageScale());

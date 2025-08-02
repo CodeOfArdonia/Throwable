@@ -1,7 +1,7 @@
 package com.iafenvoy.throwable.entity;
 
 import com.google.common.base.Suppliers;
-import com.iafenvoy.throwable.data.ThrowableItemExtension;
+import com.iafenvoy.throwable.config.ThrowableConfig;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -14,12 +14,13 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.MiningToolItem;
+import net.minecraft.item.SwordItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -33,7 +34,7 @@ import java.util.function.Supplier;
 
 public class ThrownWeaponEntity extends PersistentProjectileEntity {
     public static final String ID = "thrown_weapon";
-    public static Supplier<EntityType<ThrownWeaponEntity>> TYPE = Suppliers.memoize(() -> EntityType.Builder.<ThrownWeaponEntity>create(ThrownWeaponEntity::new, SpawnGroup.MISC).maxTrackingRange(64).trackingTickInterval(1).setDimensions(0.5F, 0.5F).build(ID));
+    public static final Supplier<EntityType<ThrownWeaponEntity>> TYPE = Suppliers.memoize(() -> EntityType.Builder.<ThrownWeaponEntity>create(ThrownWeaponEntity::new, SpawnGroup.MISC).maxTrackingRange(64).trackingTickInterval(1).setDimensions(0.5F, 0.5F).build(ID));
 
     private static final TrackedData<ItemStack> STACK = DataTracker.registerData(ThrownWeaponEntity.class, TrackedDataHandlerRegistry.ITEM_STACK);
     private static final TrackedData<Float> SCALE = DataTracker.registerData(ThrownWeaponEntity.class, TrackedDataHandlerRegistry.FLOAT);
@@ -73,7 +74,7 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
-        if (this.pickupType == PickupPermission.DISALLOWED && player.getStackInHand(hand).isEmpty()) {
+        if (this.pickupType == PickupPermission.DISALLOWED && (!ThrowableConfig.INSTANCE.ownerPickUpOnly || this.getOwner() == player) && player.getStackInHand(hand).isEmpty()) {
             player.setStackInHand(hand, this.asItemStack());
             this.discard();
             return ActionResult.SUCCESS;
