@@ -59,14 +59,14 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        this.setStack(ItemStack.fromNbt(this.getRegistryManager(), nbt.getCompound("stack")).orElse(this.getDefaultItemStack()));
+        this.setStack(ItemStack.fromNbtOrEmpty(this.getRegistryManager(), nbt.getCompound("stack")));
         this.setScale(nbt.getFloat("scale"));
     }
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
-        nbt.put("stack", this.asItemStack().encode(this.getRegistryManager()));
+        nbt.put("stack", this.asItemStack().encodeAllowEmpty(this.getRegistryManager()));
         nbt.putFloat("scale", this.getScale());
     }
 
