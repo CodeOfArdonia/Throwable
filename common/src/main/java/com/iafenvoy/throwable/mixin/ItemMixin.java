@@ -44,7 +44,7 @@ public abstract class ItemMixin implements ThrowableItemExtension {
     }
 
     @Inject(method = "getMaxUseTime", at = @At("HEAD"), cancellable = true)
-    private void handleMaxUseTime(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
+    private void handleMaxUseTime(ItemStack stack, LivingEntity user, CallbackInfoReturnable<Integer> cir) {
         DynamicRegistryManager manager = ThrowableRegistry.DYNAMIC_REGISTRY_GETTER.get();
         if (this.throwable$canThrow() && manager != null)
             cir.setReturnValue(this.throwable$getData(manager).maxUseTime());
@@ -57,7 +57,7 @@ public abstract class ItemMixin implements ThrowableItemExtension {
             int i = data.maxUseTime() - remainingUseTicks;
             if (i >= 10) {
                 if (!world.isClient) {
-                    stack.damage(1, player, (p) -> p.sendToolBreakStatus(user.getActiveHand()));
+                    stack.damage(1, player, LivingEntity.getSlotForHand(user.getActiveHand()));
                     ThrownWeaponEntity weapon = new ThrownWeaponEntity(world, player, stack);
                     weapon.setVelocity(player, player.getPitch(), player.getYaw(), 0, 2.5F, 1);
                     if (player.getAbilities().creativeMode)

@@ -8,7 +8,7 @@ import net.minecraft.sound.SoundEvents;
 
 public record ThrowableData(int maxUseTime, double damageScale, float scale, float rotateOffset, SoundEvent throwSound,
                             SoundEvent hitGroundSound) {
-    public static final ThrowableData DEFAULT = new ThrowableData(72000, 0.5, 1, 0, SoundEvents.ITEM_TRIDENT_THROW, SoundEvents.ITEM_TRIDENT_HIT_GROUND);
+    public static final ThrowableData DEFAULT = new ThrowableData(72000, 0.5, 1, 0, SoundEvents.ITEM_TRIDENT_THROW.value(), SoundEvents.ITEM_TRIDENT_HIT_GROUND);
     public static final Codec<ThrowableData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.optionalFieldOf("maxUseTime", DEFAULT.maxUseTime).forGetter(ThrowableData::maxUseTime),
             Codec.DOUBLE.optionalFieldOf("damageScale", DEFAULT.damageScale).forGetter(ThrowableData::damageScale),
