@@ -2,6 +2,10 @@ package com.iafenvoy.throwable.entity;
 
 import com.google.common.base.Suppliers;
 import com.iafenvoy.throwable.config.ThrowableConfig;
+import com.iafenvoy.throwable.mixin.PersistentProjectileEntityAccessor;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -14,6 +18,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
@@ -38,15 +43,13 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
     private static final TrackedData<Float> SCALE = DataTracker.registerData(ThrownWeaponEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private boolean hitEntity;
 
-    public ThrownWeaponEntity(World world, LivingEntity owner, ItemStack stack) {
+    public ThrownWeaponEntity(World world, LivingEntity owner, ItemStack stack) 
         super(TYPE.get(), owner, world, stack, null);
-        this.pickupType = PickupPermission.DISALLOWED;
         this.setStack(stack);
     }
 
     public ThrownWeaponEntity(EntityType<? extends PersistentProjectileEntity> entityType, World world) {
         super(entityType, world);
-        this.pickupType = PickupPermission.DISALLOWED;
     }
 
     @Override
@@ -68,6 +71,22 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
         super.writeCustomDataToNbt(nbt);
         nbt.put("stack", this.asItemStack().encodeAllowEmpty(this.getRegistryManager()));
         nbt.putFloat("scale", this.getScale());
+    }
+
+    @Override
+    protected void age() {
+        int despawnTime = ThrowableConfig.INSTANCE.despawnDelayTicks;
+        if (despawnTime <= -1) return;
+        PersistentProjectileEntityAccessor accessor = (PersistentProjectileEntityAccessor) this;
+        int life = accessor.getLife();
+        if (this.pickupType == PickupPermission.CREATIVE_ONLY) {
+            if (life >= 1200) this.discard();
+        } else if (life >= despawnTime) {
+            if (ThrowableConfig.INSTANCE.dropWhenDespawn)
+                this.getWorld().spawnEntity(new ItemEntity(this.getWorld(), this.getX(), this.getY(), this.getZ(), this.asItemStack()));
+            this.discard();
+        }
+        if (!this.isRemoved()) accessor.setLife(life + 1);
     }
 
     @Override
@@ -108,8 +127,8 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
 
         boolean bl = entity.getType() == EntityType.ENDERMAN;
         int j = entity.getFireTicks();
-        if (this.isOnFire() && !bl) entity.setOnFireFor(5);
-
+        int level = EnchantmentHelper.getLevel(Enchantments.FIRE_ASPECT, this.asItemStack());
+        if ((this.isOnFire() || level > 0) && !bl) entity.setOnFireFor((this.isOnFire() ? 5 : 0) + level * 5);
         if (entity.damage(damageSource, (float) i)) {
             if (bl) return;
             if (entity instanceof LivingEntity living) {

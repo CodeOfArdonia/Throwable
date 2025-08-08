@@ -8,7 +8,8 @@
   ],
   "mixins": [
     "ItemMixin",
-    "MinecraftServerMixin"
+    "MinecraftServerMixin",
+    "PersistentProjectileEntityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
