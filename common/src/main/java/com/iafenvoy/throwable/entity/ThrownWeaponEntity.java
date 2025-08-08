@@ -3,34 +3,31 @@ package com.iafenvoy.throwable.entity;
 import com.google.common.base.Suppliers;
 import com.iafenvoy.throwable.config.ThrowableConfig;
 import com.iafenvoy.throwable.mixin.PersistentProjectileEntityAccessor;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.attribute.EntityAttributes;
+import com.iafenvoy.throwable.util.EnchantmentUtil;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import java.util.function.Supplier;
@@ -41,15 +38,17 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
 
     private static final TrackedData<ItemStack> STACK = DataTracker.registerData(ThrownWeaponEntity.class, TrackedDataHandlerRegistry.ITEM_STACK);
     private static final TrackedData<Float> SCALE = DataTracker.registerData(ThrownWeaponEntity.class, TrackedDataHandlerRegistry.FLOAT);
-    private boolean hitEntity;
+    private boolean hitEntity, canReturn, returning;
 
-    public ThrownWeaponEntity(World world, LivingEntity owner, ItemStack stack) 
+    public ThrownWeaponEntity(World world, LivingEntity owner, ItemStack stack) {
         super(TYPE.get(), owner, world, stack, null);
         this.setStack(stack);
+        this.setNoClip(false);
     }
 
     public ThrownWeaponEntity(EntityType<? extends PersistentProjectileEntity> entityType, World world) {
         super(entityType, world);
+        this.setNoClip(false);
     }
 
     @Override
@@ -90,6 +89,27 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
     }
 
     @Override
+    public void tick() {
+        if (this.inGroundTime > 4) this.canReturn = true;
+        Entity entity = this.getOwner();
+        int i = EnchantmentUtil.getEnchantmentLevel(this.getWorld().getRegistryManager(), Enchantments.LOYALTY, this.asItemStack());
+        if (i > 0 && (this.canReturn || this.isNoClip()) && entity != null && entity.isAlive()) {
+            if (this.pickupType == PickupPermission.DISALLOWED) this.pickupType = PickupPermission.ALLOWED;
+            this.setNoClip(true);
+            Vec3d vec3d = entity.getEyePos().subtract(this.getPos());
+            this.setPos(this.getX(), this.getY() + vec3d.y * 0.015 * (double) i, this.getZ());
+            if (this.getWorld().isClient) this.lastRenderY = this.getY();
+            double d = 0.05 * (double) i;
+            this.setVelocity(this.getVelocity().multiply(0.95).add(vec3d.normalize().multiply(d)));
+            if (!this.returning) {
+                this.returning = true;
+                this.playSound(SoundEvents.ITEM_TRIDENT_RETURN, 10.0F, 1.0F);
+            }
+        }
+        super.tick();
+    }
+
+    @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         if (this.pickupType == PickupPermission.DISALLOWED && (!ThrowableConfig.INSTANCE.ownerPickUpOnly || this.getOwner() == player) && player.getStackInHand(hand).isEmpty()) {
             player.setStackInHand(hand, this.asItemStack());
@@ -127,7 +147,7 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
 
         boolean bl = entity.getType() == EntityType.ENDERMAN;
         int j = entity.getFireTicks();
-        int level = EnchantmentHelper.getLevel(Enchantments.FIRE_ASPECT, this.asItemStack());
+        int level = EnchantmentUtil.getEnchantmentLevel(this.getWorld().getRegistryManager(), Enchantments.FIRE_ASPECT, this.asItemStack());
         if ((this.isOnFire() || level > 0) && !bl) entity.setOnFireFor((this.isOnFire() ? 5 : 0) + level * 5);
         if (entity.damage(damageSource, (float) i)) {
             if (bl) return;
