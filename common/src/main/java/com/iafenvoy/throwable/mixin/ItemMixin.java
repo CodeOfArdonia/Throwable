@@ -1,5 +1,6 @@
 package com.iafenvoy.throwable.mixin;
 
+import com.iafenvoy.throwable.config.ThrowableConfig;
 import com.iafenvoy.throwable.data.ThrowableData;
 import com.iafenvoy.throwable.data.ThrowableItemExtension;
 import com.iafenvoy.throwable.data.ThrowableRegistry;
@@ -63,7 +64,7 @@ public abstract class ItemMixin implements ThrowableItemExtension {
                     if (player.getAbilities().creativeMode)
                         weapon.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
                     else {
-                        weapon.pickupType = PersistentProjectileEntity.PickupPermission.DISALLOWED;
+                        weapon.pickupType = ThrowableConfig.INSTANCE.autoPick ? PersistentProjectileEntity.PickupPermission.ALLOWED : PersistentProjectileEntity.PickupPermission.DISALLOWED;
                         player.getInventory().removeOne(stack);
                     }
                     if (remainingUseTicks <= 0) weapon.setCritical(true);
