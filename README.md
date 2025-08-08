@@ -15,7 +15,13 @@ Create file `.minecraft/config/throwable.json` (may exist).
 ```json5
 {
   //Whether only owner can pick up the throwable thing.
-  "ownerPickUpOnly": false
+  "ownerPickUpOnly": false,
+  //Whether auto pickup when near.
+  "autoPick": false,
+  //Whether become an item entity when despawn
+  "dropWhenDespawn": true,
+  //Ticks before despawn, -1 for infinite time (not recommended)
+  "despawnDelayTicks": 6000
 }
 ```
 
