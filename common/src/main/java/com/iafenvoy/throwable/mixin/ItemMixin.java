@@ -64,7 +64,7 @@ public abstract class ItemMixin implements ThrowableItemExtension {
                     if (player.getAbilities().creativeMode)
                         weapon.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
                     else {
-                        weapon.pickupType = PersistentProjectileEntity.PickupPermission.DISALLOWED;
+                        weapon.pickupType = ThrowableConfig.INSTANCE.autoPick ? PersistentProjectileEntity.PickupPermission.ALLOWED : PersistentProjectileEntity.PickupPermission.DISALLOWED;
                         player.getInventory().removeOne(stack);
                     }
                     if (remainingUseTicks <= 0) weapon.setCritical(true);
