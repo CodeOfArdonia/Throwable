@@ -4,6 +4,9 @@ This mod can make everything throwable, with a configuration system.
 
 If you want to make something throwable, add to `#throwable:throwable` item tag.
 
+Sometimes you may not want to throw when offhand has item (such as shield), configurable in
+`#throwable:disable_when_offhand` tag.
+
 By default, all swords can be thrown. Once you have thrown, you need to click it to pick up.
 
 ## Configuration
@@ -15,7 +18,9 @@ Create file `.minecraft/config/throwable.json` (may exist).
 ```json5
 {
   //Whether only owner can pick up the throwable thing.
-  "ownerPickUpOnly": false
+  "ownerPickUpOnly": false,
+  //Whether need to sneak to throw
+  "sneakThrow": true
 }
 ```
 

@@ -1,5 +1,6 @@
 package com.iafenvoy.throwable.mixin;
 
+import com.iafenvoy.throwable.config.ThrowableConfig;
 import com.iafenvoy.throwable.data.ThrowableData;
 import com.iafenvoy.throwable.data.ThrowableItemExtension;
 import com.iafenvoy.throwable.data.ThrowableRegistry;
@@ -79,6 +80,8 @@ public abstract class ItemMixin implements ThrowableItemExtension {
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void handleUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+        if (!user.isSneaking() && ThrowableConfig.INSTANCE.sneakThrow) return;
+        if (hand == Hand.MAIN_HAND && user.getOffHandStack().isIn(DISABLE_WHEN_OFFHAND)) return;
         if (this.throwable$canThrow()) {
             ItemStack stack = user.getStackInHand(hand);
             if (stack.getDamage() >= stack.getMaxDamage() - 1)
