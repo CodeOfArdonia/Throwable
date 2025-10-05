@@ -8,7 +8,8 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 
 public interface ThrowableItemExtension {
-    TagKey<Item> THROWABLE = TagKey.of(RegistryKeys.ITEM, Identifier.of(Throwable.MOD_ID, Throwable.MOD_ID));
+    TagKey<Item> THROWABLE = TagKey.of(RegistryKeys.ITEM, Identifier.of(Throwable.MOD_ID, "throwable"));
+    TagKey<Item> DISABLE_WHEN_OFFHAND = TagKey.of(RegistryKeys.ITEM, Identifier.of(Throwable.MOD_ID, "disable_when_offhand"));
 
     ThrowableData throwable$getData(DynamicRegistryManager registries);
 
