@@ -7,7 +7,11 @@ If you want to make something throwable, add to `#throwable:throwable` item tag.
 Sometimes you may not want to throw when offhand has item (such as shield), configurable in
 `#throwable:disable_when_offhand` tag.
 
-By default, all swords can be thrown. Once you have thrown, you need to click it to pick up.
+By default, all swords can be thrown. Once you have thrown, you need to click it to pick up. (Configurable)
+
+If the throwable items have fire aspect enchantment, it will set the target on fire for `level*5` seconds.
+
+**1.21+ only** You can use loyalty enchantment on any throwable items.
 
 ## Configuration
 

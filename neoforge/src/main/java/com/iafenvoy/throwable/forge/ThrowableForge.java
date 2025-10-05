@@ -6,20 +6,21 @@ import com.iafenvoy.throwable.data.ThrowableRegistry;
 import com.iafenvoy.throwable.entity.ThrownWeaponEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DataPackRegistryEvent;
-import net.minecraftforge.registries.DeferredRegister;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
 @Mod(Throwable.MOD_ID)
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public final class ThrowableForge {
-    @SuppressWarnings("removal")
-    public ThrowableForge() {
+    public ThrowableForge(IEventBus bus, ModContainer container) {
         DeferredRegister<EntityType<?>> registry = DeferredRegister.create(RegistryKeys.ENTITY_TYPE, Throwable.MOD_ID);
         registry.register(ThrownWeaponEntity.ID, ThrownWeaponEntity.TYPE);
-        registry.register(FMLJavaModLoadingContext.get().getModEventBus());
+        registry.register(bus);
     }
 
     @SubscribeEvent
