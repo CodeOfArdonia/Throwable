@@ -41,6 +41,8 @@ Create file `data/<item namespace>/throwable/throwable/<item id>.json`, then wri
   "maxUseTime": 72000,
   //Damage Ratio to item base damage
   "damageScale": 0.5,
+  //Initial throw speed; higher values also increase damage
+  "throwSpeed": 2.5,
   //Render Size Scale
   "scale": 1,
   //Rotate based on renders in item frame
