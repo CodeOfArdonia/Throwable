@@ -60,7 +60,7 @@ public abstract class ItemMixin implements ThrowableItemExtension {
                 if (!world.isClient) {
                     stack.damage(1, player, LivingEntity.getSlotForHand(user.getActiveHand()));
                     ThrownWeaponEntity weapon = new ThrownWeaponEntity(world, player, stack);
-                    weapon.setVelocity(player, player.getPitch(), player.getYaw(), 0, 2.5F, 1);
+                    weapon.setVelocity(player, player.getPitch(), player.getYaw(), 0, data.throwSpeed(), 1);
                     if (player.getAbilities().creativeMode)
                         weapon.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
                     else {
