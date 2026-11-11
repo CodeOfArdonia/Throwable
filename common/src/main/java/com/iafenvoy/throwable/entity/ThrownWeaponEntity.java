@@ -5,9 +5,13 @@ import com.iafenvoy.throwable.config.ThrowableConfig;
 import com.iafenvoy.throwable.mixin.PersistentProjectileEntityAccessor;
 import com.iafenvoy.throwable.util.EnchantmentUtil;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -17,6 +21,7 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.GameStateChangeS2CPacket;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -199,8 +204,17 @@ public class ThrownWeaponEntity extends PersistentProjectileEntity {
     @Override
     public void setDamage(double scale) {
         double damage = 1;
-        Integer component = this.asItemStack().get(DataComponentTypes.DAMAGE);
-        if (component != null) damage = component;
+        double attackDamage = 0;
+        boolean hasAttackDamage = false;
+        AttributeModifiersComponent modifiers = this.asItemStack().getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+        RegistryKey<EntityAttribute> attackDamageKey = EntityAttributes.GENERIC_ATTACK_DAMAGE.getKey().orElseThrow();
+        for (AttributeModifiersComponent.Entry entry : modifiers.modifiers()) {
+            if (entry.attribute().matchesKey(attackDamageKey) && entry.modifier().operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
+                attackDamage += entry.modifier().value();
+                hasAttackDamage = true;
+            }
+        }
+        if (hasAttackDamage) damage = attackDamage;
         super.setDamage(damage * scale);
     }
 
